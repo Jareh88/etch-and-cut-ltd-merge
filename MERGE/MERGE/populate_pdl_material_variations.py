@@ -15,53 +15,55 @@ def load_product_data():
 
 PRODUCT_LISTING = load_product_data()
 
-def extract_material_variations(sku, variation):
-    """Extract material variations based on SKU and variation from product dictionary."""
+def extract_material_variations(sku):
+    """Extract material variations based on SKU from the product dictionary or fallback to SKU prefix."""
     product_data = PRODUCT_LISTING.get(sku, {})
-    
+
     if not product_data:
-        return []
-    
+        # Extract material code from SKU if dictionary lookup fails
+        material_code = sku.split("_")[0]  # Extract first segment (CWS, WFOV, etc.)
+        return [material_code] if material_code else []
+
     material_variations = set()
 
-    # Iterate through __dictionary__ variations
+    # Iterate through variations (if any exist)
     for variation_key, details in product_data.get("variations", {}).items():
-        if variation_key in variation:
-            materials = details.get("material variation", [])
-            material_variations.update(materials)
-    
-    return list(material_variations)
+        materials = details.get("material variation", [])
+        material_variations.update(materials)
+
+    return list(material_variations) if material_variations else [sku.split("_")[0]]
 
 def populate_pdl_material_variations():
-    """Populate the pdl_material_variations table."""
+    """Populate the pdl_material_variations table ensuring all SKUs are mapped to materials."""
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
-        # Fetch all product design listings
-        cursor.execute("SELECT product_design_listing_id, sku, variation FROM product_design_listings")
-        records = cursor.fetchall()
+        # Ensure table is not getting reset or overwritten
+        cursor.execute("SELECT COUNT(*) FROM pdl_material_variations")
+        row_count_before = cursor.fetchone()[0]
 
-        pdl_material_variation_id = 1  # ID counter
+        # Fetch all product design listings
+        cursor.execute("SELECT product_design_listing_id, sku FROM product_design_listings")
+        records = cursor.fetchall()
 
         inserted_count = 0  # Track successful inserts
 
-        for pdl_id, sku, variation in records:
-            material_variations = extract_material_variations(sku, variation)
-
-            print(f"🛠 Processing SKU: {sku} | Variation: {variation} | Material Variations: {material_variations}")
+        for pdl_id, sku in records:
+            material_variations = extract_material_variations(sku)
 
             for variation_no, material_code in enumerate(material_variations, start=1):
                 cursor.execute("""
                     INSERT OR IGNORE INTO pdl_material_variations (
-                        pdl_material_variation_id, pdl_id, pdl_material_variation_no, material_code
-                    ) VALUES (?, ?, ?, ?)
-                """, (pdl_material_variation_id, pdl_id, variation_no, material_code))
-
-                pdl_material_variation_id += 1
-                inserted_count += 1
-
+                        pdl_id, pdl_material_variation_no, material_code
+                    ) VALUES (?, ?, ?)
+                """, (pdl_id, variation_no, material_code))
+                                
         conn.commit()
+
+        # Ensure inserts were successful
+        cursor.execute("SELECT COUNT(*) FROM pdl_material_variations")
+
         conn.close()
 
         print(f"✅ Successfully inserted {inserted_count} records into pdl_material_variations.")

@@ -1,0 +1,6 @@
+PLATE_REFERENCE;PLATE_SEQ;SALES_CHANNEL_ID;VALID_ORDER_ID;INVALID_ORDER_ID;DESIGN_ID;PRIVATE_NOTES;BUYER_NOTE;VARIATION;PERSONALISATION;@FG_01;@FG_02;@FG_03;@FG_04;@BG_01;@BG_02;@BG_03;@BG_04;P0888_T01P01S01F01;P0888_T01P01S02F01;P0888_T02P01S01F01;P0888_T03P01S01F01;
+20241204_05_GBNM_WBEV_KRHSM_001;001;EtsyHW - ;3511997030;; - P0888;None;None;Keyring options:Our First Home,Quantity:2 keyrings ONLY;Josh & Eden,06/12/24;;;;;;;;;Our First Home;;JOSH & EDEN;6TH DECEMBER 2024;
+20241204_05_GBNM_WBEV_KRHSM_001;002;EtsyHW - ;3511997030;; - P0888;None;None;Keyring options:Our First Home,Quantity:2 keyrings ONLY;Josh & Eden,06/12/24;;;;;;;;;Our First Home;;JOSH & EDEN;6TH DECEMBER 2024;
+20241204_05_GBNM_WBEV_KRHSM_001;003;EtsyHW - ;3513903255;; - P0888;None;None;Keyring options:Home Sweet Home,Quantity:1 keyring + giftbox;Eilidh &Brody;;;;;;;;;;Home Sweet Home;EILIDH &BRODY;;
+20241204_05_GBNM_WBEV_KRHSM_001;004;EtsyHW - ;3514168007;; - P0888;None;None;Keyring options:Home Sweet Home,Quantity:2 keyrings ONLY;Charlotte & Matthew,6/12/24;;;;;;;;;;Home Sweet Home;CHARLOTTE & MATTHEW;6TH DECEMBER 2024;
+20241204_05_GBNM_WBEV_KRHSM_001;005;EtsyHW - ;3514168007;; - P0888;None;None;Keyring options:Home Sweet Home,Quantity:2 keyrings ONLY;Charlotte & Matthew,6/12/24;;;;;;;;;;Home Sweet Home;CHARLOTTE & MATTHEW;6TH DECEMBER 2024;

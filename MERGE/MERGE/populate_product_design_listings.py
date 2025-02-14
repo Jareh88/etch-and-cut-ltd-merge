@@ -50,8 +50,6 @@ def populate_product_design_listings():
                 product_obj = ProductDesignListing(sales_channel_id, sku, variation)
                 title = product_obj.title if product_obj.title else "UNKNOWN"
 
-                print(f"🛠 Processing: SKU={sku} | Variation={variation} | Title={title}")
-
                 cursor.execute("""
                     INSERT OR IGNORE INTO product_design_listings (
                         product_design_listing_id, sales_channel_id, sku, title, variation, quantity
