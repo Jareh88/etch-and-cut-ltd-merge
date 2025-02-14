@@ -10,18 +10,21 @@ PRODUCT_LISTING_PATH = os.path.join(os.path.dirname(__file__), "product_design_l
 
 def load_product_data():
     """Dynamically load ProductDesignListing and extract __dictionary__"""
-    
-    spec = importlib.util.spec_from_file_location("product_design_listing", PRODUCT_LISTING_PATH)
-    module = importlib.util.module_from_spec(spec)
-    
-    sys.modules["product_design_listing"] = module
-    spec.loader.exec_module(module)
+    try:
+        spec = importlib.util.spec_from_file_location("product_design_listing", PRODUCT_LISTING_PATH)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules["product_design_listing"] = module
+        spec.loader.exec_module(module)
 
-    if hasattr(module, "ProductDesignListing") and hasattr(module.ProductDesignListing, "__dictionary__"):
-        print("✅ Successfully loaded __dictionary__ from ProductDesignListing class")
-        return module.ProductDesignListing.__dictionary__.get("EtsyTM", {})  # Get only the EtsyTM part
-    else:
-        raise ValueError("❌ Error: __dictionary__ not found in ProductDesignListing")
+        if hasattr(module, "ProductDesignListing") and hasattr(module.ProductDesignListing, "__dictionary__"):
+            print("✅ Successfully loaded __dictionary__ from ProductDesignListing class")
+            return module.ProductDesignListing.__dictionary__.get("EtsyTM", {})  # Get only the EtsyTM part
+        else:
+            raise ValueError("❌ Error: __dictionary__ not found in ProductDesignListing")
+
+    except Exception as e:
+        print(f"❌ Error loading product data: {e}")
+        return {}  # Return an empty dictionary to avoid further crashes
 
 PRODUCT_LISTING = load_product_data()
 
@@ -38,15 +41,25 @@ def populate_product_design_listings():
         """)
         records = cursor.fetchall()
 
-        for idx, (sales_channel_id, sku, variation, quantity) in enumerate(records, start=1):
-            product_obj = ProductDesignListing(sales_channel_id, sku, variation)
-            title = product_obj.title if product_obj.title else "UNKNOWN"
+        if not records:
+            print("⚠️ No records found in order_items. Skipping population.")
+            return
 
-            cursor.execute("""
-                INSERT OR IGNORE INTO product_design_listings (
-                    product_design_listing_id, sales_channel_id, sku, title, variation, quantity
-                ) VALUES (?, ?, ?, ?, ?, ?)
-            """, (idx, sales_channel_id, sku, title, variation, quantity))
+        for idx, (sales_channel_id, sku, variation, quantity) in enumerate(records, start=1):
+            try:
+                product_obj = ProductDesignListing(sales_channel_id, sku, variation)
+                title = product_obj.title if product_obj.title else "UNKNOWN"
+
+                print(f"🛠 Processing: SKU={sku} | Variation={variation} | Title={title}")
+
+                cursor.execute("""
+                    INSERT OR IGNORE INTO product_design_listings (
+                        product_design_listing_id, sales_channel_id, sku, title, variation, quantity
+                    ) VALUES (?, ?, ?, ?, ?, ?)
+                """, (idx, sales_channel_id, sku, title, variation, quantity))
+
+            except Exception as e:
+                print(f"❌ Error processing SKU {sku}, Variation {variation}: {e}")
 
         conn.commit()
         conn.close()
