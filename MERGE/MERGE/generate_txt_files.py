@@ -1,7 +1,7 @@
 import sqlite3
 import os
-import json
-import re
+import sys
+import importlib.util
 
 from system_settings import *
 
@@ -13,51 +13,20 @@ PRODUCT_LISTING_PATH = os.path.join(os.path.dirname(__file__), "product_design_l
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-# Load product data
 def load_product_data():
-    with open(PRODUCT_LISTING_PATH, "r", encoding="utf-8") as file:
-        content = file.read()
+    """Dynamically load ProductDesignListing and extract __dictionary__"""
+    
+    spec = importlib.util.spec_from_file_location("product_design_listing", PRODUCT_LISTING_PATH)
+    module = importlib.util.module_from_spec(spec)
+    
+    sys.modules["product_design_listing"] = module
+    spec.loader.exec_module(module)
 
-    # **Step 1: Remove all comments (`# ...`)**
-    content_no_comments = re.sub(r'#.*', '', content)
-
-    # **Step 2: Find `__dictionary__ = {...}` and extract JSON**
-    start_index = content_no_comments.find("__dictionary__ =")  
-    if start_index == -1:
-        raise ValueError("❌ `__dictionary__` not found in product_design_listing.py")
-
-    # Get everything after "__dictionary__ ="
-    json_data = content_no_comments[start_index + len("__dictionary__ ="):].strip()
-
-    # **Step 3: Extract ONLY the JSON dictionary (stop at the first unmatched `}`)**
-    bracket_count = 0
-    json_dict = ""
-    for char in json_data:
-        json_dict += char
-        if char == "{":
-            bracket_count += 1
-        elif char == "}":
-            bracket_count -= 1
-            if bracket_count == 0:
-                break  # Stop once the dictionary closes properly
-
-    # **Step 4: Save to debug.json for validation**
-    with open("debug.json", "w", encoding="utf-8") as f:
-        f.write(json_dict)
-    print("📂 JSON saved to debug.json for inspection.")
-
-    # **Step 5: Debugging printout**
-    print("Raw JSON Data (first 500 characters):", json_dict[:500])
-
-    # **Step 6: Parse JSON safely**
-    try:
-        return json.loads(json_dict)
-    except json.JSONDecodeError as e:
-        print("❌ JSON Decode Error:", e)
-        print("Error at character:", e.pos)
-        print("Problematic JSON snippet:", json_dict[max(0, e.pos - 50): e.pos + 50])  # Show context around error
-        raise  # Re-raise error
-
+    if hasattr(module, "ProductDesignListing") and hasattr(module.ProductDesignListing, "__dictionary__"):
+        print("✅ Successfully loaded __dictionary__ from ProductDesignListing class")
+        return module.ProductDesignListing.__dictionary__.get("EtsyTM", {})  # Get only the EtsyTM part
+    else:
+        raise ValueError("❌ Error: __dictionary__ not found in ProductDesignListing")
 
 PRODUCT_LISTING = load_product_data()
 

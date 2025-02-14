@@ -1,25 +1,27 @@
 import sqlite3
 import os
-import json
-import re
+import sys
+import importlib.util
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "../TEST/DATABASE/EtchCut_DB_DEV")
 PRODUCT_LISTING_PATH = os.path.join(os.path.dirname(__file__), "product_design_listing.py")
 
 def load_product_data():
-    """Extract only the dictionary from product_design_listing.py"""
-    with open(PRODUCT_LISTING_PATH, "r", encoding="utf-8") as file:
-        content = file.read()
+    """Dynamically load ProductDesignListing and extract __dictionary__"""
+    
+    spec = importlib.util.spec_from_file_location("product_design_listing", PRODUCT_LISTING_PATH)
+    module = importlib.util.module_from_spec(spec)
+    
+    sys.modules["product_design_listing"] = module
+    spec.loader.exec_module(module)
 
-    # Use regex to extract JSON data cleanly
-    match = re.search(r"__dictionary__ = ({.*})", content, re.DOTALL)
-    if match:
-        json_data = match.group(1)
-        return json.loads(json_data)
+    if hasattr(module, "ProductDesignListing") and hasattr(module.ProductDesignListing, "__dictionary__"):
+        print("✅ Successfully loaded __dictionary__ from ProductDesignListing class")
+        return module.ProductDesignListing.__dictionary__.get("EtsyTM", {})  # Get only the EtsyTM part
     else:
-        raise ValueError("Could not find __dictionary__ in product_design_listing.py")
+        raise ValueError("❌ Error: __dictionary__ not found in ProductDesignListing")
 
-PRODUCT_LISTING = load_product_data().get("EtsyTM", {})
+PRODUCT_LISTING = load_product_data()
 
 def populate_product_design_listings():
     try:
