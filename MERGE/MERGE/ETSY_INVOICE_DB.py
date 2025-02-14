@@ -1466,6 +1466,8 @@ if __name__ == '__main__':
         # Ensure database tables are up to date before generating .txt files
         subprocess.run(["python", os.path.join(MERGE_DIR, "populate_merge_items.py")])
         subprocess.run(["python", os.path.join(MERGE_DIR, "populate_production_items.py")])
+        subprocess.run(["python", os.path.join(MERGE_DIR, "populate_product_design_listings.py")])
+        subprocess.run(["python", os.path.join(MERGE_DIR, "populate_pdl_material_variations.py")])
         subprocess.run(["python", os.path.join(MERGE_DIR, "generate_txt_files.py")])
 
         db_order: NewOrder = NewOrder()
