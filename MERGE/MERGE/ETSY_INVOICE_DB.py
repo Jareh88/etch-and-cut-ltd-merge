@@ -1463,13 +1463,6 @@ if __name__ == '__main__':
         cursor.execute('''PRAGMA foreign_keys = ON''')
         cursor.close()
 
-        # Ensure database tables are up to date before generating .txt files
-        subprocess.run(["python", os.path.join(MERGE_DIR, "populate_merge_items.py")])
-        subprocess.run(["python", os.path.join(MERGE_DIR, "populate_production_items.py")])
-        subprocess.run(["python", os.path.join(MERGE_DIR, "populate_product_design_listings.py")])
-        subprocess.run(["python", os.path.join(MERGE_DIR, "populate_pdl_material_variations.py")])
-        subprocess.run(["python", os.path.join(MERGE_DIR, "generate_txt_files.py")])
-
         db_order: NewOrder = NewOrder()
         db_orders: list[NewOrder] = get_orders_by_status(conn, UNPROCESSED)
 
@@ -1673,6 +1666,13 @@ if __name__ == '__main__':
             usa_post.create_spreadsheet()
         else:
             pass
+
+        # Ensure database tables are up to date before generating .txt files
+        subprocess.run(["python", os.path.join(MERGE_DIR, "populate_merge_items.py")])
+        subprocess.run(["python", os.path.join(MERGE_DIR, "populate_production_items.py")])
+        subprocess.run(["python", os.path.join(MERGE_DIR, "populate_product_design_listings.py")])
+        subprocess.run(["python", os.path.join(MERGE_DIR, "populate_pdl_material_variations.py")])
+        subprocess.run(["python", os.path.join(MERGE_DIR, "generate_txt_files.py")])
 
         material_product_item_list: list[str] = summarise_distinct_material_product_types(conn, PRE_MERGE)
         material_product_item: str = None
