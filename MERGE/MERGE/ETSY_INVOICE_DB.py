@@ -1673,6 +1673,7 @@ if __name__ == '__main__':
         subprocess.run(["python", os.path.join(MERGE_DIR, "populate_product_design_listings.py")])
         subprocess.run(["python", os.path.join(MERGE_DIR, "populate_pdl_material_variations.py")])
         subprocess.run(["python", os.path.join(MERGE_DIR, "generate_txt_files.py")])
+        subprocess.run(["python", os.path.join(MERGE_DIR, "generate_indesign_files.py")])
 
         material_product_item_list: list[str] = summarise_distinct_material_product_types(conn, PRE_MERGE)
         material_product_item: str = None
