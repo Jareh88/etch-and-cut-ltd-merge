@@ -7460,7 +7460,10 @@ class ProductDesignListing:
                 self.design_parameters   = None
                 self.variations          = None
 
+                print(f"🧪 [DEBUG] Product: {p_sku} | Title: {self.title} | Material Variations: {self.material_variation}")
+
         except:
+            print(f"❌ Error initializing ProductDesignListing for {p_sku}: {e}")
             self.title               = None
             self.material_variation  = None
             self.product_variation   = None

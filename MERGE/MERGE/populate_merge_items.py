@@ -34,7 +34,6 @@ def populate_merge_items():
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
-        print("Executing SQL:", query)
         cursor.execute(query)
         conn.commit()
         conn.close()

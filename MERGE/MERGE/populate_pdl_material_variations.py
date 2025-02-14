@@ -1,66 +1,50 @@
+from product_design_listing import ProductDesignListing
 import sqlite3
 import os
-import importlib.util
-import sys
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "../TEST/DATABASE/EtchCut_DB_DEV")
-PRODUCT_LISTING_PATH = os.path.join(os.path.dirname(__file__), "product_design_listing.py")
-
-def load_product_data():
-    """Dynamically load ProductDesignListing and extract __dictionary__"""
-    spec = importlib.util.spec_from_file_location("product_design_listing", PRODUCT_LISTING_PATH)
-    module = importlib.util.module_from_spec(spec)
-    sys.modules["product_design_listing"] = module
-    spec.loader.exec_module(module)
-
-    if hasattr(module, "ProductDesignListing") and hasattr(module.ProductDesignListing, "__dictionary__"):
-        print("✅ Successfully loaded __dictionary__ from ProductDesignListing class")
-        return module.ProductDesignListing.__dictionary__.get("EtsyTM", {})  # Get only the EtsyTM part
-    else:
-        raise ValueError("❌ Error: __dictionary__ not found in ProductDesignListing")
-
-PRODUCT_LISTING = load_product_data()
 
 def populate_pdl_material_variations():
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
-        # Get all product listings
-        cursor.execute("SELECT product_design_listing_id, sku FROM product_design_listings")
+        # Fetch product listings
+        cursor.execute("SELECT product_design_listing_id, sales_channel_id, sku FROM product_design_listings")
         records = cursor.fetchall()
 
+        if not records:
+            print("⚠ No records found in product_design_listings.")
+            return
+
+        print(f"🔍 Found {len(records)} product design listings.")
+
         pdl_material_variation_id = 1  # Start ID counter
-        inserted_count = 0  # Track inserted records
+        inserted_count = 0  # Track how many insertions occur
 
-        for pdl_id, sku in records:
-            material_variations = PRODUCT_LISTING.get(sku, {}).get("variations", {})
+        for pdl_id, sales_channel_id, sku in records:
+            # Initialize class object
+            product_obj = ProductDesignListing(sales_channel_id, sku, None)
 
-            if not material_variations:
-                print(f"⚠️ No material variations found for SKU: {sku}")
-                continue  # Skip if no variations exist
+            # Extract material variations
+            material_variations = product_obj.material_variation if product_obj.material_variation else []
 
-            for variation_no, (variation_key, variation_data) in enumerate(material_variations.items(), start=1):
-                material_codes = variation_data.get("material variation", [])
+            print(f"🛠 Processing SKU: {sku} | Material Variations: {material_variations}")
+
+            for variation_no, material_code in enumerate(material_variations, start=1):
+                cursor.execute("""
+                    INSERT OR IGNORE INTO pdl_material_variations (
+                        pdl_material_variation_id, pdl_id, pdl_material_variation_no, material_code
+                    ) VALUES (?, ?, ?, ?)
+                """, (pdl_material_variation_id, pdl_id, variation_no, material_code))
                 
-                if not material_codes:
-                    print(f"⚠️ No material codes for variation '{variation_key}' in SKU: {sku}")
-                    continue
-                
-                for material_code in material_codes:
-                    print(f"🔄 Inserting: pdl_id={pdl_id}, variation_no={variation_no}, material_code={material_code}")
-                    
-                    cursor.execute("""
-                        INSERT OR IGNORE INTO pdl_material_variations (
-                            pdl_material_variation_id, pdl_id, pdl_material_variation_no, material_code
-                        ) VALUES (?, ?, ?, ?)
-                    """, (pdl_material_variation_id, pdl_id, variation_no, material_code))
-
-                    pdl_material_variation_id += 1
-                    inserted_count += 1
+                pdl_material_variation_id += 1
+                inserted_count += 1  # Count successful inserts
 
         conn.commit()
         conn.close()
+        
+        print(f"✅ Successfully inserted {inserted_count} records into pdl_material_variations.")
 
     except Exception as e:
         print(f"❌ Error populating pdl_material_variations: {e}")
