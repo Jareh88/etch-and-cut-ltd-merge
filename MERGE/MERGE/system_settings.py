@@ -19,7 +19,7 @@ class SystemSettings:
                         ,   "absolute home path"            : "C:/Users/Adam/OneDrive/Documents/Dev/Etch & Cut LTD/Test Program/MERGE/TEST"
 #                        ,   "absolute home path"           :  "S:"
                         ,   "database path"                 : "C:/Users/Adam/OneDrive/Documents/Dev/Etch & Cut LTD/Test Program/MERGE/TEST/DATABASE/EtchCut_DB_DEV"
-                        ,   "indesign merge path"           : "MERGE/INDESIGN/PRODUCTION"
+                        ,   "indesign merge path"           : "MERGE/PRODUCTION"
 #                        ,   "design component path"         : "S:\MERGE\IMAGES"
                         ,   "design component path"         : "C:/Users/Adam/OneDrive/Documents/Dev/Etch & Cut LTD/Test Program/MERGE/TEST/IMAGES"
                         ,   "etsy source data path"         : "C:/Users/Adam/OneDrive/Documents/Dev/Etch & Cut LTD/Test Program/MERGE/TEST/DATA/ETSY/LIVE"
